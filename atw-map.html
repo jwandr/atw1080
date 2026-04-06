@@ -3,81 +3,364 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Layered Map Toggle</title>
+  <title>Around The World in 1080 Days</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 10px;
-    }
+    body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:0px; text-align:center; }
 
-    h1 {
-      margin-bottom: 10px;
-    }
+    .controls { margin-bottom: 16px; }
+    label { margin: 0 10px; cursor: pointer; }
 
-    .controls {
-      margin: -30px 0;
-    }
+    .map-container { position: relative; display:inline-block; max-width:100%; }
+    .map-container img { width:100%; display:block; }
 
-    label {
-      margin: 0 10px;
-      cursor: pointer;
-    }
+    svg { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
 
-    .map-container {
-      position: relative;
-      display: inline-block;
-      max-width: 100%;
-    }
-
-    .map-container img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
+    .label { font-size:12px; fill:#222; }
   </style>
 </head>
 <body>
 
-  <h1>Around The World in 1080 Days</h1>
+  <h2>Travel Routes</h2>
+
+  <div class="controls">
+    <label><input type="checkbox" checked onchange="drawRoutes()" id="toggleYear1"> Year 1</label>
+    <label><input type="checkbox" checked onchange="drawRoutes()" id="toggleYear2"> Year 2</label>
+    <label><input type="checkbox" checked onchange="drawRoutes()" id="toggleYear3"> Year 3</label>
+    <label><input type="checkbox" checked onchange="drawRoutes()" id="toggleLabels"> Labels</label>
+  </div>
 
   <div class="map-container">
-    <!-- Base Map -->
-    <img src="maps.001.png" alt="Base Map">
-
-    <!-- Overlay Layers -->
-    <img id="layer5" class="layer" src="maps.006.png" alt="">
-    <img id="layer4" class="layer" src="maps.005.png" alt="">
-    <img id="layer3" class="layer" src="maps.004.png" alt="">
-    <img id="layer2" class="layer" src="maps.003.png" alt="">
-    <img id="layer1" class="layer" src="maps.002.png" alt="">
-    
-    <div class="controls">
-      <label><input type="checkbox" checked onchange="toggleLayer('layer1')"> Year 1</label>
-      <label><input type="checkbox" checked onchange="toggleLayer('layer2')"> Year 2</label>
-      <label><input type="checkbox" checked onchange="toggleLayer('layer3')"> Year 3</label>
-      <label><input type="checkbox" checked onchange="toggleLayer('layer4')"> Year 4</label>
-      <label><input type="checkbox" checked onchange="toggleLayer('layer5')"> Year 5</label>
-    </div>
-    
+    <img id="mapImage" src="maps/maps.001.png" alt="Map">
+    <svg id="overlay"></svg>
   </div>
 
   <script>
-    function toggleLayer(id) {
-      const layer = document.getElementById(id);
-      layer.style.display = (layer.style.display === 'none') ? 'block' : 'none';
+    const routes = [
+          {
+        name: "Year 3",
+        color: "orange",
+        toggleId: "toggleYear3",
+        points: [
+
+{ x: 22.5, y: 39.5, label: "Belize", labelPos: "left", startMode: "vertical" },
+{ x: 24, y: 42, label: "Honduras", labelPos: "left", startMode: "" },
+{ x: 25.5, y: 44.5, label: "Costa Rica", labelPos: "below", startMode: "vertical" },
+{ x: 28, y: 38, label: "Sint Maartin", labelPos: "above", startMode: "horizontal" },
+{ x: 29, y: 40, label: "Guadeloupe", labelPos: "", startMode: "" },
+{ x: 29, y: 42, label: "Martinique", labelPos: "", startMode: "" },
+{ x: 30, y: 54, label: "Manaus", labelPos: "", startMode: "" },
+{ x: 33, y: 59, label: "Pantanel", labelPos: "below", startMode: "" },
+{ x: 36, y: 59, label: "El Salvador", labelPos: "", startMode: "" },
+{ x: 37, y: 54, label: "Recife", labelPos: "", startMode: "" },
+{ x: 47, y: 19, label: "", labelPos: "above", startMode: "" },
+{ x: 52.5, y: 19, label: "Poland", labelPos: "", startMode: "" },
+{ x: 54, y: 16, label: "Latvia", labelPos: "left", startMode: "" },
+{ x: 54, y: 12, label: "Finland", labelPos: "above", startMode: "horizontal" },
+{ x: 66, y: 22, label: "Turkmenistan", labelPos: "below", startMode: "" },
+{ x: 77, y: 22, label: "Mongolia", labelPos: "above", startMode: "horizontal" },
+{ x: 79.5, y: 25, label: "China", labelPos: "", startMode: "" },
+{ x: 82, y: 28, label: "South Korea", labelPos: "", startMode: "" }
+
+        ]
+      },
+      
+      {
+        name: "Year 2",
+        color: "darkviolet",
+        toggleId: "toggleYear2",
+        points: [
+
+{ x: 80.5, y: 40.5, label: "Philippines", labelPos: "below", startMode: "" },
+{ x: 77, y: 40.5, label: "Vietnam", labelPos: "above", startMode: "" },
+{ x: 75, y: 40.5, label: "Cambodia", labelPos: "below", startMode: "horizontal" },
+{ x: 64, y: 36, label: "Oman", labelPos: "left", startMode: "" },
+{ x: 57, y: 32, label: "Jordan", labelPos: "above", startMode: "" },
+{ x: 55, y: 32, label: "Egypt", labelPos: "left", startMode: "vertical" },
+{ x: 57, y: 49.5, label: "Kenya", labelPos: "", startMode: "" },
+{ x: 57, y: 53, label: "Tanzania", labelPos: "", startMode: "vertical" },
+{ x: 55, y: 61.5, label: "Zimbabwe", labelPos: "", startMode: "vertical" },
+{ x: 52.5, y: 68, label: "Cape Town", labelPos: "", startMode: "" },
+{ x: 26, y: 26.5, label: "New York", labelPos: "above", startMode: "" },
+{ x: 23.5, y: 30, label: "New Orleans", labelPos: "below", startMode: "" },
+{ x: 17, y: 30, label: "Utah", labelPos: "below", startMode: "" },
+{ x: 15, y: 30, label: "California", labelPos: "left", startMode: "" },
+{ x: 17, y: 30, label: "", labelPos: "", startMode: "" },
+{ x: 17, y: 26, label: "Wyoming", labelPos: "", startMode: "" },
+{ x: 17, y: 22, label: "Montana", labelPos: "", startMode: "" },
+{ x: 14, y: 22, label: "Washington", labelPos: "below", startMode: "" },
+{ x: 14, y: 15, label: "Canada", labelPos: "", startMode: "" },
+{ x: 5, y: 36, label: "Hawaii", labelPos: "", startMode: "" },
+{ x: 5, y: 57, label: "French Polynesia", labelPos: "", startMode: "" }
+
+        ]
+      },
+{
+        name: "Year 1",
+        color: "red",
+        toggleId: "toggleYear1",
+        points: [
+          
+{ x: 27 , y:  77 , label: "Patagonia", labelPos: "left", startMode: "" },
+{ x: 28 , y:  67 , label: "Santiago", labelPos: "", startMode: "" },
+{ x: 17 , y:  67 , label: "Easter Island", labelPos: "below", startMode: "" },
+{ x: 28 , y:  67 , label: " ", labelPos: "", startMode: "" },
+{ x: 28 , y:  60 , label: "Bolivia", labelPos: "", startMode: "" },
+{ x: 27 , y:  58 , label: "Nazca ", labelPos: "", startMode: "" },
+{ x: 26 , y:  56 , label: "Cusco ", labelPos: "", startMode: "" },
+{ x: 40, y:  42 , label: "Cape Verde ", labelPos: "", startMode: "vertical" },
+{ x: 40, y: 26.5, label: "Azores", labelPos: "above", startMode: "" },
+{ x: 45 , y: 26.5, label: "Portugal ", labelPos: "below", startMode: "vertical" },
+{ x: 47 , y:  19 , label: "UK", labelPos: "above", startMode: "" },
+{ x: 52.5, y: 26.5, label: "Greece", labelPos: "above", startMode: "" },
+{ x: 55 , y: 26.5, label: "Turkiye ", labelPos: "below", startMode: "" },
+{ x: 60 , y: 26.5, label: "Azerbaijan", labelPos: "above", startMode: "" },
+{ x: 68.5, y: 36, label: "India", labelPos: "below", startMode: "" },
+{ x: 70.5, y: 33.5, label: "Nepal", labelPos: "above", startMode: "horizontal" },
+{ x: 73, y: 35, label: "Bhutan", labelPos: "right", startMode: "vertical" },
+{ x: 68, y: 47, label: "Maldives", labelPos: "below", startMode: "" }
+          
+        ]
+      }
+    ];
+
+    // Create a constrained path (horizontal, vertical, 45° only)
+function buildSegment(p1, p2, startMode = null, endMode = null) {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+
+  const adx = Math.abs(dx);
+  const ady = Math.abs(dy);
+
+  const signX = Math.sign(dx);
+  const signY = Math.sign(dy);
+
+  // --- PERFECT CASES ---
+  if (adx === 0 || ady === 0 || adx === ady) {
+    return [p1, p2];
+  }
+
+  // --- HELPERS (ALL VALID DIRECTIONS ONLY) ---
+  function diagFrom(p, d) {
+    return { x: p.x + signX * d, y: p.y + signY * d };
+  }
+
+  function horizTo(p, x) {
+    return { x: x, y: p.y };
+  }
+
+  function vertTo(p, y) {
+    return { x: p.x, y: y };
+  }
+
+  // --- DEFAULT (no overrides) ---
+  if (!startMode && !endMode) {
+    // prefer 1-bend L shape
+    return [
+      p1,
+      { x: p2.x, y: p1.y },
+      p2
+    ];
+  }
+
+  // --- START ONLY ---
+  if (startMode && !endMode) {
+    if (startMode === "horizontal") {
+      return [p1, horizTo(p1, p2.x), p2];
     }
+
+    if (startMode === "vertical") {
+      return [p1, vertTo(p1, p2.y), p2];
+    }
+
+    if (startMode === "diagonal") {
+      const d = Math.min(adx, ady);
+      return [p1, diagFrom(p1, d), p2];
+    }
+  }
+
+  // --- END ONLY ---
+  if (!startMode && endMode) {
+    if (endMode === "horizontal") {
+      return [p1, { x: p1.x, y: p2.y }, p2];
+    }
+
+    if (endMode === "vertical") {
+      return [p1, { x: p2.x, y: p1.y }, p2];
+    }
+
+    if (endMode === "diagonal") {
+      const d = Math.min(adx, ady);
+      return [
+        p1,
+        { x: p2.x - signX * d, y: p2.y - signY * d },
+        p2
+      ];
+    }
+  }
+
+  // --- BOTH start + end ---
+  // Only allow 2 bends when necessary
+
+  const d = Math.min(adx, ady);
+
+  // Case: both want diagonal
+  if (startMode === "diagonal" && endMode === "diagonal") {
+    return [p1, diagFrom(p1, d), p2];
+  }
+
+  // Otherwise build clean 3-segment path (still only valid angles)
+  let mid1, mid2;
+
+  // start segment
+  if (startMode === "horizontal") {
+    mid1 = horizTo(p1, p1.x + signX * 1);
+  } else if (startMode === "vertical") {
+    mid1 = vertTo(p1, p1.y + signY * 1);
+  } else {
+    mid1 = diagFrom(p1, d);
+  }
+
+  // end segment
+  if (endMode === "horizontal") {
+    mid2 = { x: p2.x - signX * d, y: p2.y };
+  } else if (endMode === "vertical") {
+    mid2 = { x: p2.x, y: p2.y - signY * d };
+  } else {
+    mid2 = {
+      x: p2.x - signX * d,
+      y: p2.y - signY * d
+    };
+  }
+
+  return [p1, mid1, mid2, p2];
+}
+
+    // Rounded corners
+    function roundedPath(points, radius) {
+      if (points.length < 2) return "";
+
+      let d = `M ${points[0].x} ${points[0].y}`;
+
+      for (let i = 1; i < points.length - 1; i++) {
+        const p0 = points[i - 1];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+
+        const dx1 = p1.x - p0.x;
+        const dy1 = p1.y - p0.y;
+        const dx2 = p2.x - p1.x;
+        const dy2 = p2.y - p1.y;
+
+        const len1 = Math.hypot(dx1, dy1);
+        const len2 = Math.hypot(dx2, dy2);
+
+        const r = Math.min(radius, len1 / 2, len2 / 2);
+
+        const p1a = {
+          x: p1.x - (dx1 / len1) * r,
+          y: p1.y - (dy1 / len1) * r
+        };
+
+        const p1b = {
+          x: p1.x + (dx2 / len2) * r,
+          y: p1.y + (dy2 / len2) * r
+        };
+
+        d += ` L ${p1a.x} ${p1a.y}`;
+        d += ` Q ${p1.x} ${p1.y} ${p1b.x} ${p1b.y}`;
+      }
+
+      const last = points[points.length - 1];
+      d += ` L ${last.x} ${last.y}`;
+
+      return d;
+    }
+
+    function getLabelOffset(pos) {
+      const offset = 14;
+      switch (pos) {
+        case "above": return { dx: 0, dy: -offset, anchor: "middle" };
+        case "below": return { dx: 0, dy: offset + 4, anchor: "middle" };
+        case "left": return { dx: -offset, dy: 4, anchor: "end" };
+        default: return { dx: offset, dy: 4, anchor: "start" };
+      }
+    }
+
+    function drawRoutes() {
+      const svg = document.getElementById("overlay");
+      svg.innerHTML = "";
+
+      const map = document.getElementById("mapImage");
+      const width = map.clientWidth;
+      const height = map.clientHeight;
+
+      const showLabels = document.getElementById("toggleLabels").checked;
+
+      routes.forEach(route => {
+        const visible = document.getElementById(route.toggleId).checked;
+        if (!visible) return;
+
+        for (let i = 0; i < route.points.length - 1; i++) {
+          const raw1 = route.points[i];
+          const raw2 = route.points[i + 1];
+
+          const p1 = {
+            x: raw1.x * width / 100,
+            y: raw1.y * height / 100
+          };
+
+          const p2 = {
+            x: raw2.x * width / 100,
+            y: raw2.y * height / 100
+          };
+
+          const mode = route.points[i].startMode || "diagonal";
+          const startMode = route.points[i].startMode || "diagonal";
+const endMode = route.points[i + 1].enterMode || "diagonal";
+
+const constrained = buildSegment(p1, p2, startMode, endMode);
+
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", roundedPath(constrained, 6));
+          path.setAttribute("stroke", route.color);
+          path.setAttribute("stroke-width", 6);
+          path.setAttribute("fill", "none");
+          path.setAttribute("stroke-linecap", "round");
+
+          svg.appendChild(path);
+        }
+
+        route.points.forEach(p => {
+          const cx = p.x * width / 100;
+          const cy = p.y * height / 100;
+
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", cx);
+          circle.setAttribute("cy", cy);
+          circle.setAttribute("r", 8);
+          circle.setAttribute("fill", "white");
+          circle.setAttribute("stroke", route.color);
+          circle.setAttribute("stroke-width", 4);
+          svg.appendChild(circle);
+
+          if (showLabels) {
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            const offset = getLabelOffset(p.labelPos);
+
+            text.setAttribute("x", cx + offset.dx);
+            text.setAttribute("y", cy + offset.dy);
+            text.setAttribute("text-anchor", offset.anchor);
+            text.setAttribute("class", "label");
+            text.textContent = p.label;
+
+            svg.appendChild(text);
+          }
+        });
+      });
+    }
+
+    window.onload = drawRoutes;
+    window.onresize = drawRoutes;
   </script>
 
 </body>
